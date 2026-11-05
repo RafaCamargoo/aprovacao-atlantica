@@ -1070,8 +1070,6 @@ details[open] p{animation:abrir .4s var(--curva)}
       <p class="erro" data-erro="whatsapp" hidden="">Confira o número. É por ele que o consultor vai falar com você.</p>
       <label class="campo"><span>Cidade e UF</span><input name="cidade" type="text" autocomplete="address-level2" placeholder="Ex.: Campinas/SP" required=""></label>
       <p class="erro" data-erro="cidade" hidden="">Informe sua cidade e seu estado.</p>
-      <label class="aceite"><input type="checkbox" name="aceite" required=""><span>Li e concordo com a <a id="politica" href="#" target="_blank" rel="noopener">Política de Privacidade</a> e aceito receber o contato da Atlântica sobre este orçamento.</span></label>
-      <p class="erro" data-erro="aceite" hidden="">Para enviar, precisamos do seu aceite.</p>
       <p class="erro" data-erro="envio" hidden="">Não conseguimos enviar agora. Tente de novo em instantes.</p>
     </fieldset>
     <div class="form__acoes">
@@ -1095,7 +1093,6 @@ window.LP_CONFIG = {
   FIM_OFERTA: '2026-11-30T23:59:59-03:00', // contagem regressiva do hero
   SHOW_PENDENCIAS: true,      // mudar para false antes de publicar
   WHATSAPP: '5511997404959',  // ainda sem confirmação do Lucas
-  POLITICA_URL: '',           // link da Política de Privacidade
   // PROVISÓRIO: trocar pelas faixas de preço de cada linha (Lucas). Ticket médio hoje: R$ 23,6 mil.
   FAIXAS_INVESTIMENTO: ['Até R$ 20 mil', 'De R$ 20 mil a R$ 40 mil', 'De R$ 40 mil a R$ 80 mil', 'Acima de R$ 80 mil'],
   PENDENCIAS: [
@@ -1107,7 +1104,6 @@ window.LP_CONFIG = {
     'Foto do hero: a máquina foi gerada por IA a partir da foto real; o briefing pede foto real do equipamento. (Lucas)',
     'Vídeos: os links expiraram; enviar os arquivos .mp4. (coordenação)',
     'Número de WhatsApp: (11) 99740-4959, ainda sem confirmação. (Lucas)',
-    'Link da Política de Privacidade no aceite do formulário. (coordenação)',
     'Página de obrigado (obrigado.html) ainda não existe. (coordenação)'
   ]
 };
@@ -1255,7 +1251,6 @@ window.LP_CONFIG = {
   const voltar = $('[data-voltar]'), avancar = $('[data-avancar]'), enviar = $('[data-enviar]'), barraForm = $('.form__progresso i');
   const modo = cfg.FORM_MODE === 'webhook' && cfg.FORM_ENDPOINT ? 'webhook' : 'demo';
   $('[data-demo]').hidden = modo !== 'demo';
-  $('#politica').href = cfg.POLITICA_URL || '#';
   $('[data-faixas]').innerHTML = cfg.FAIXAS_INVESTIMENTO.map((f) => `<label><input type="radio" name="investimento" value="${f}"><span>${f}</span></label>`).join('');
   const utm = Object.fromEntries([...new URLSearchParams(location.search)].filter(([k]) => /^(utm_|gclid|fbclid)/.test(k)));
   let atual = 1, origem = null;
@@ -1275,8 +1270,7 @@ window.LP_CONFIG = {
     const a = erro('nome', !d.get('nome').trim());
     const b = erro('whatsapp', d.get('whatsapp').replace(/\D/g, '').length < 10);
     const c = erro('cidade', d.get('cidade').trim().length < 3);
-    const e = erro('aceite', !d.get('aceite'));
-    return !(a || b || c || e);
+    return !(a || b || c);
   };
   $$('[data-abrir-form]').forEach((b) => b.addEventListener('click', () => {
     origem = b;
@@ -1306,7 +1300,7 @@ window.LP_CONFIG = {
     rotulo.textContent = 'Enviando...'; enviar.disabled = true;
     try {
       if (modo === 'webhook') {
-        const lead = { ...Object.fromEntries(d), aceite: true, ...utm, pagina: location.href.split('#')[0], enviado_em: new Date().toISOString() };
+        const lead = { ...Object.fromEntries(d), ...utm, pagina: location.href.split('#')[0], enviado_em: new Date().toISOString() };
         const r = await fetch(cfg.FORM_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lead), keepalive: true });
         if (!r.ok) throw new Error(r.status);
       }
